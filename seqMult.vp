@@ -1,0 +1,54 @@
+// seqMult.vp
+
+//; # Good Habits
+//; use strict ;                   # Use a strict interpretation
+//; use warnings FATAL=>qw(all);   # Turn warnings into errors
+//; use diagnostics ;              # Print helpful info, for errors
+
+//; # Parameters
+//; my $bW = parameter( name=>"bitWidth", val=>16 , doc=>"width of the input");
+
+module `mname` (
+input  logic [`$bW-1`:0] a,
+input  logic [`$bW-1`:0] b,
+input  logic             ab_valid,
+output logic             ab_ready,
+
+input  logic             clk,
+input  logic             rst,
+
+output logic [`2*$bW`:0] z,
+output logic             z_valid
+);
+
+logic [`2*$bW`:0] sum_nxt;
+logic [`2*$bW-1`:0] a_nxt;
+logic [`2*$bW-1`:0] add1, aff;
+logic [`$bW-1`:0] b_nxt, bff;
+logic signal, zero, inc, dec;
+logic [4:0] cnt;
+
+
+//; my $d = generate("dff", "my_b_new_dff", BitWidth=> $bW);
+`$d->instantiate()` (.d(b_nxt), .clk(clk), .rst(rst) ,.en(1'b1),.q(bff));
+
+//; my $d2 = generate("dff2", "my_a_dff", BitWidth=> 32);
+`$d2->instantiate()` (.d(a_nxt), .clk(clk), .rst(rst) ,.en(1'b1),.q(aff));
+
+//; my $d3 = generate("dff1", "my_sum", BitWidth=> 33);
+`$d3->instantiate()` (.d(sum_nxt), .clk(clk), .rst(rst) ,.en(1'b1),.q(z), .r(zero) );
+
+//; my $counter = generate( "counter", "my_cnt", BitWidth=> 5 );
+`$counter->instantiate()` (.inc(inc), .dec(dec), .clk(clk), .rst(rst), .zero(zero), .cnt(cnt) );
+
+assign signal = ab_valid && ab_ready;
+assign dec = 1'b0;
+assign inc = (cnt<16) ? 1'b1 : 1'b0;
+assign zero = signal;
+assign sum_nxt = add1 + z; 
+assign ab_ready = !rst || (cnt==16) ? 1'b1 : 1'b0 ;
+assign z_valid = (cnt==16) ;
+assign a_nxt = signal ? {16'b0,a} : aff<<1;
+assign b_nxt = signal ? b : bff>>1;
+assign add1 = (bff[0]==1) ? aff : 0;
+endmodule
