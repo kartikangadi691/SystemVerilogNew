@@ -1,0 +1,76 @@
+//; # risc5ALU.vp
+//;
+//; use strict;
+//; use warnings FATAL => qw(all);
+//; use diagnostics;
+//; use POSIX();
+
+//; my $bW = parameter( name => "bW", val => 64, doc => "Width of data.");
+//; my $funct7W = parameter( name => "funct7W", val => 7, doc => "funct7 field's width.");
+//; my $funct3W = parameter( name => "funct3W", val => 3, doc => "funct3 field's width.");
+//; my $opcodeW = parameter( name => "opcodeW", val => 7, doc => "opcode field's width.");
+
+module `mname`
+(
+  input logic signed [`$bW - 1`:0] in0,
+  input logic signed [`$bW - 1`:0] in1,
+
+  input logic [`$funct3W - 1`:0] funct3,
+  input logic [`$funct7W - 1`:0] funct7,
+  input logic [`$opcodeW - 1`:0] opcode,
+
+  output logic signed [`$bW - 1`:0] res,
+  output logic zero
+);
+
+
+always_comb begin
+logic [19:0] fun;
+typedef logic signed [31:0] WORD; 
+fun = {1'b0, opcode, 1'b0, funct7, 1'b0, funct3};
+unique case(fun)
+20'h33000 : res = in0 + in1; // add
+20'h3b000 : res = WORD'(in0[31:0] + in1[31:0]); // addw
+20'h13000 : res = in0 + in1; // addi
+20'h1b000 : res = WORD'(in0[31:0] + in1[31:0]); // addiw
+20'h33007 : res = in0 & in1; // and
+20'h13007 : res = in0 & in1; // andi
+20'h33006 : res = in0 | in1; // or
+20'h13006 : res = in0 | in1; // ori
+20'h33001 : res = in0 << in1[5:0]; // sll
+20'h3b001 : res = WORD'(in0[31:0] << in1[4:0]); // sllw
+20'h13001 : res = in0 << in1[5:0]; // sli
+20'h1b001 : res = WORD'(in0[31:0] << in1[4:0]); // slliw
+20'h33002 : res = in0 < in1 ? 64'b1 : 64'b0; // slt
+20'h13002 : res = in0 < in1 ? 64'b1 : 64'b0; // slti
+20'h13003 : res = unsigned'(in0) < unsigned'(in1) ? 64'b1 : 64'b0; // sltiu
+20'h33003 : res = unsigned'(in0) < unsigned'(in1) ? 64'b1 : 64'b0; // sltu 
+20'h33205 : res = in0 >>> in1[5:0]; // sra
+20'h3b205 : res = WORD'(in0[31:0] >>> in1[4:0]); // sraw
+20'h13205 : res = in0 >>> in1[5:0]; // srai
+20'h1b205 : res = WORD'(in0[31:0] >>> in1[4:0]); // sraiw
+20'h33005 : res = in0 >> in1[5:0]; // srl
+20'h3b005 : res = WORD'(in0[31:0] >> in1[4:0]); // srlw
+20'h13005 : res = in0 >> in1[5:0]; // srli
+20'h1b005 : res = WORD'(in0[31:0] >> in1[4:0]); // srliw
+20'h33200 : res = in0 - in1; // sub
+20'h3b200 : res = WORD'(in0[31:0] - in1[31:0]); // subw
+20'h33004 : res = in0 ^ in1; // xor
+20'h13004 : res = in0 ^ in1; // xori
+20'h33010 : res = in0 * in1; // mul
+20'h3b010 : res = WORD'(in0[31:0] * in1[31:0]); // mulw
+20'h33011 : res = upper_dword(in0 * in1); // mulh
+20'h33012 : res = upper_dword(in0 * unsigned'(in1)); // mulhsu
+20'h33013 : res = upper_dword(unsigned'(in0) * unsigned'(in1)); // mulh
+20'h33014 : res = in0 / in1; // div
+20'h3b014 : res = WORD'(in0[31:0] / in1[31:0]); // divw
+20'h33015 : res = unsigned'(in0) / unsigned'(in1); // divu
+20'h3b015 : res = WORD'(unsigned'(in0[31:0]) / unsigned'(in1[31:0])); // divuw
+20'h33016 : res = in0 % in1; // rem
+20'h3b016 : res = WORD'(in0[31:0] % in1[31:0]); // remw
+20'h33017 : res = unsigned'(in0) % unsigned'(in1); // remu
+20'h3b017 : res = WORD'(unsigned'(in0[31:0]) % unsigned'(in1[31:0])); // remuw
+  default : res = 64'd0;
+endcase
+end
+endmodule

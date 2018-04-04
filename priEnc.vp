@@ -1,0 +1,32 @@
+//priEnc.vp
+//;
+//; use strict ;                   # Use a strict interpretation
+//; use warnings FATAL=>qw(all);   # Turn warnings into errors
+//; use diagnostics ;              # Print helpful info, for errors
+//;
+
+//; my $bW = 10 ;   # Perl scalar variable
+module `mname`
+   (
+    input  logic [`$bW-1`:0] a,
+    output logic [`$bW-1`:0] z 
+    );
+// Your implementation here
+ 
+always_comb begin 
+priority case (1'b1)
+	a[9] : z <= 10'b1000000000;
+	a[8] : z <= 10'b0100000000;
+	a[7] : z <= 10'b0010000000;
+	a[6] : z <= 10'b0001000000;
+	a[5] : z <= 10'b0000100000;
+	a[4] : z <= 10'b0000010000;
+	a[3] : z <= 10'b0000001000;
+	a[2] : z <= 10'b0000000100;
+	a[1] : z <= 10'b0000000010;
+	a[0] : z <= 10'b0000000001;
+	default : z <= 10'b0000000000;
+endcase
+end
+			   
+endmodule
