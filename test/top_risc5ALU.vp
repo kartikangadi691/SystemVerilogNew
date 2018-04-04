@@ -1,0 +1,292 @@
+//; # top_risc5ALU.vp
+//;
+//; use strict;
+//; use warnings FATAL => qw(all);
+//; use diagnostics;
+//; use POSIX();
+
+//; #Generate DUT
+//; my $risc5ALU = generate_base("risc5ALU", "my_risc5ALU");
+
+//; my $bW      = $risc5ALU -> get_param("bW");
+//; my $funct3W  = $risc5ALU -> get_param("funct3W");
+//; my $funct7W  = $risc5ALU -> get_param("funct7W");
+//; my $opcodeW = $risc5ALU -> get_param("opcodeW");
+
+//; my %ISAhash;
+//; 
+//; $ISAhash{add}{opcode} = 0x33;
+//; $ISAhash{add}{funct3} = 0x0;
+//; $ISAhash{add}{funct7} = 0x0;
+//; $ISAhash{add}{function} = 'in0 + in1';
+//; $ISAhash{addw}{opcode} = 0x3b;
+//; $ISAhash{addw}{funct3} = 0x0;
+//; $ISAhash{addw}{funct7} = 0x0;
+//; $ISAhash{addw}{function} = "WORD'(in0[31:0] + in1[31:0])";
+//; $ISAhash{addi}{opcode} = 0x13;
+//; $ISAhash{addi}{funct3} = 0x0;
+//; $ISAhash{addi}{funct7} = '-';
+//; $ISAhash{addi}{function} = 'in0 + in1';
+//; $ISAhash{addiw}{opcode} = 0x1b;
+//; $ISAhash{addiw}{funct3} = 0x0;
+//; $ISAhash{addiw}{funct7} = '-';
+//; $ISAhash{addiw}{function} = "WORD'(in0[31:0] + in1[31:0])";
+//; $ISAhash{and}{opcode} = 0x33;
+//; $ISAhash{and}{funct3} = 0x7;
+//; $ISAhash{and}{funct7} = 0x0;
+//; $ISAhash{and}{function} = 'in0 & in1';
+//; $ISAhash{andi}{opcode} = 0x13;
+//; $ISAhash{andi}{funct3} = 0x7;
+//; $ISAhash{andi}{funct7} = '-';
+//; $ISAhash{andi}{function} = 'in0 & in1';
+//; $ISAhash{or}{opcode} = 0x33;
+//; $ISAhash{or}{funct3} = 0x6;
+//; $ISAhash{or}{funct7} = 0x0;
+//; $ISAhash{or}{function} = 'in0 | in1';
+//; $ISAhash{ori}{opcode} = 0x13;
+//; $ISAhash{ori}{funct3} = 0x6;
+//; $ISAhash{ori}{funct7} = '-';
+//; $ISAhash{ori}{function} = 'in0 | in1';
+//; $ISAhash{sll}{opcode} = 0x33;
+//; $ISAhash{sll}{funct3} = 0x1;
+//; $ISAhash{sll}{funct7} = 0x0;
+//; $ISAhash{sll}{function} = 'in0 << in1[5:0]';
+//; $ISAhash{sllw}{opcode} = 0x3b;
+//; $ISAhash{sllw}{funct3} = 0x1;
+//; $ISAhash{sllw}{funct7} = 0x0;
+//; $ISAhash{sllw}{function} = "WORD'(in0[31:0] << in1[4:0])";
+//; $ISAhash{slli}{opcode} = 0x13;
+//; $ISAhash{slli}{funct3} = 0x1;
+//; $ISAhash{slli}{funct7} = 0x0;
+//; $ISAhash{slli}{function} = 'in0 << in1[5:0]';
+//; $ISAhash{slliw}{opcode} = 0x1b;
+//; $ISAhash{slliw}{funct3} = 0x1;
+//; $ISAhash{slliw}{funct7} = 0x0;
+//; $ISAhash{slliw}{function} = "WORD'(in0[31:0] << in1[4:0])";
+//; $ISAhash{slt}{opcode} = 0x33;
+//; $ISAhash{slt}{funct3} = 0x2;
+//; $ISAhash{slt}{funct7} = 0x0;
+//; $ISAhash{slt}{function} = "in0 < in1 ? 64'b1 : 64'b0";
+//; $ISAhash{slti}{opcode} = 0x13;
+//; $ISAhash{slti}{funct3} = 0x2;
+//; $ISAhash{slti}{funct7} = '-';
+//; $ISAhash{slti}{function} = "in0 < in1 ? 64'b1 : 64'b0";
+//; $ISAhash{sltiu}{opcode} = 0x13;
+//; $ISAhash{sltiu}{funct3} = 0x3;
+//; $ISAhash{sltiu}{funct7} = '-';
+//; $ISAhash{sltiu}{function} = "unsigned'(in0) < unsigned'(in1) ? 64'b1 : 64'b0";
+//; $ISAhash{sltu}{opcode} = 0x33;
+//; $ISAhash{sltu}{funct3} = 0x3;
+//; $ISAhash{sltu}{funct7} = 0x0;
+//; $ISAhash{sltu}{function} = "unsigned'(in0) < unsigned'(in1) ? 64'b1 : 64'b0";
+//; $ISAhash{sra}{opcode} = 0x33;
+//; $ISAhash{sra}{funct3} = 0x5;
+//; $ISAhash{sra}{funct7} = 0x20;
+//; $ISAhash{sra}{function} = 'in0 >>> in1[5:0]';
+//; $ISAhash{sraw}{opcode} = 0x3b;
+//; $ISAhash{sraw}{funct3} = 0x5;
+//; $ISAhash{sraw}{funct7} = 0x20;
+//; $ISAhash{sraw}{function} = "WORD'(in0[31:0] >>> in1[4:0])";
+//; $ISAhash{srai}{opcode} = 0x13;
+//; $ISAhash{srai}{funct3} = 0x5;
+//; $ISAhash{srai}{funct7} = 0x20;
+//; $ISAhash{srai}{function} = 'in0 >>> in1[5:0]';
+//; $ISAhash{sraiw}{opcode} = 0x1b;
+//; $ISAhash{sraiw}{funct3} = 0x5;
+//; $ISAhash{sraiw}{funct7} = 0x20;
+//; $ISAhash{sraiw}{function} = "WORD'(in0[31:0] >>> in1[4:0])";
+//; $ISAhash{srl}{opcode} = 0x33;
+//; $ISAhash{srl}{funct3} = 0x5;
+//; $ISAhash{srl}{funct7} = 0x0;
+//; $ISAhash{srl}{function} = 'in0 >> in1[5:0]';
+//; $ISAhash{srlw}{opcode} = 0x3b;
+//; $ISAhash{srlw}{funct3} = 0x5;
+//; $ISAhash{srlw}{funct7} = 0x0;
+//; $ISAhash{srlw}{function} = "WORD'(in0[31:0] >> in1[4:0])";
+//; $ISAhash{srli}{opcode} = 0x13;
+//; $ISAhash{srli}{funct3} = 0x5;
+//; $ISAhash{srli}{funct7} = 0x0;
+//; $ISAhash{srli}{function} = 'in0 >> in1[5:0]';
+//; $ISAhash{srliw}{opcode} = 0x1b;
+//; $ISAhash{srliw}{funct3} = 0x5;
+//; $ISAhash{srliw}{funct7} = 0x0;
+//; $ISAhash{srliw}{function} = "WORD'(in0[31:0] >> in1[4:0])";
+//; $ISAhash{sub}{opcode} = 0x33;
+//; $ISAhash{sub}{funct3} = 0x0;
+//; $ISAhash{sub}{funct7} = 0x20;
+//; $ISAhash{sub}{function} = 'in0 - in1';
+//; $ISAhash{subw}{opcode} = 0x3b;
+//; $ISAhash{subw}{funct3} = 0x0;
+//; $ISAhash{subw}{funct7} = 0x20;
+//; $ISAhash{subw}{function} = "WORD'(in0[31:0] - in1[31:0])";
+//; $ISAhash{xor}{opcode} = 0x33;
+//; $ISAhash{xor}{funct3} = 0x4;
+//; $ISAhash{xor}{funct7} = 0x0;
+//; $ISAhash{xor}{function} = 'in0 ^ in1';
+//; $ISAhash{xori}{opcode} = 0x13;
+//; $ISAhash{xori}{funct3} = 0x4;
+//; $ISAhash{xori}{funct7} = '-';
+//; $ISAhash{xori}{function} = 'in0 ^ in1';
+//; $ISAhash{mul}{opcode} = 0x33;
+//; $ISAhash{mul}{funct3} = 0x0;
+//; $ISAhash{mul}{funct7} = 0x1;
+//; $ISAhash{mul}{function} = 'in0 * in1';
+//; $ISAhash{mulw}{opcode} = 0x3b;
+//; $ISAhash{mulw}{funct3} = 0x0;
+//; $ISAhash{mulw}{funct7} = 0x1;
+//; $ISAhash{mulw}{function} = "WORD'(in0[31:0] * in1[31:0])";
+//; $ISAhash{mulh}{opcode} = 0x33;
+//; $ISAhash{mulh}{funct3} = 0x1;
+//; $ISAhash{mulh}{funct7} = 0x1;
+//; $ISAhash{mulh}{function} = "upper_dword(in0 * in1)";
+//; $ISAhash{mulhsu}{opcode} = 0x33;
+//; $ISAhash{mulhsu}{funct3} = 0x2;
+//; $ISAhash{mulhsu}{funct7} = 0x1;
+//; $ISAhash{mulhsu}{function} = "upper_dword(in0 * unsigned'(in1))";
+//; $ISAhash{mulhu}{opcode} = 0x33;
+//; $ISAhash{mulhu}{funct3} = 0x3;
+//; $ISAhash{mulhu}{funct7} = 0x1;
+//; $ISAhash{mulhu}{function} = "upper_dword(unsigned'(in0) * unsigned'(in1))";
+//; $ISAhash{div}{opcode} = 0x33;
+//; $ISAhash{div}{funct3} = 0x4;
+//; $ISAhash{div}{funct7} = 0x1;
+//; $ISAhash{div}{function} = 'in0 / in1';
+//; $ISAhash{divw}{opcode} = 0x3b;
+//; $ISAhash{divw}{funct3} = 0x4;
+//; $ISAhash{divw}{funct7} = 0x1;
+//; $ISAhash{divw}{function} = "WORD'(in0[31:0] / in1[31:0])";
+//; $ISAhash{divu}{opcode} = 0x33;
+//; $ISAhash{divu}{funct3} = 0x5;
+//; $ISAhash{divu}{funct7} = 0x1;
+//; $ISAhash{divu}{function} = "unsigned'(in0) / unsigned'(in1)";
+//; $ISAhash{divuw}{opcode} = 0x3b;
+//; $ISAhash{divuw}{funct3} = 0x5;
+//; $ISAhash{divuw}{funct7} = 0x1;
+//; $ISAhash{divuw}{function} = "WORD'(unsigned'(in0[31:0]) / unsigned'(in1[31:0]))";
+//; $ISAhash{rem}{opcode} = 0x33;
+//; $ISAhash{rem}{funct3} = 0x6;
+//; $ISAhash{rem}{funct7} = 0x1;
+//; $ISAhash{rem}{function} = 'in0 % in1';
+//; $ISAhash{remw}{opcode} = 0x3b;
+//; $ISAhash{remw}{funct3} = 0x6;
+//; $ISAhash{remw}{funct7} = 0x1;
+//; $ISAhash{remw}{function} = "WORD'(in0[31:0] % in1[31:0])";
+//; $ISAhash{remu}{opcode} = 0x33;
+//; $ISAhash{remu}{funct3} = 0x7;
+//; $ISAhash{remu}{funct7} = 0x1;
+//; $ISAhash{remu}{function} = "unsigned'(in0) % unsigned'(in1)";
+//; $ISAhash{remuw}{opcode} = 0x3b;
+//; $ISAhash{remuw}{funct3} = 0x7;
+//; $ISAhash{remuw}{funct7} = 0x1;
+//; $ISAhash{remuw}{function} = "WORD'(unsigned'(in0[31:0]) % unsigned'(in1[31:0]))";
+
+
+function [63:0] upper_dword(input [127:0] val128);
+  upper_dword = val128[127:64];
+endfunction
+
+
+module `mname` ();
+
+    int seed;
+
+    logic triggerStart;
+    logic triggerStop;
+
+    typedef logic signed [31:0] WORD;
+
+    /////////////////////////
+    // DRIVER DUT Interface
+    /////////////////////////
+
+    logic signed [`$bW - 1`:0] in0;
+    logic signed [`$bW - 1`:0] in1;
+
+    logic [`$funct3W - 1`:0] funct3;
+    logic [`$funct7W - 1`:0] funct7;
+    logic [`$opcodeW - 1`:0] opcode;
+
+    logic signed [`$bW - 1`:0] res;
+    logic zero;
+
+    ///////////////////////
+    // Instantiate DUT
+    ///////////////////////
+    `$risc5ALU -> instantiate()` (.*); 
+
+
+    ///////////////////////
+    // Instnatiate Drivers
+    ///////////////////////
+
+    // Generic Bench
+//; my $gb = generate("generic_bench", "BASIC_BENCH");
+    `$gb->instantiate()`  ( .triggerStart(triggerStart),
+                            .triggerStop(triggerStop),
+                            .seed(seed),
+                            .clk(clk),
+                            .rst(),
+                            .clk_period(clk_period) ) ;
+
+
+    ////////////////////////////
+    // Test Related Tasks
+    ////////////////////////////
+
+
+ 
+   
+    task runTest ();
+
+//        $display("==============================================");
+
+//; for my $inst (keys %ISAhash)
+//; {
+        in0 = $random();
+        in1 = $random();
+        opcode = 7'd`$ISAhash{$inst}{opcode}`;
+        funct3  = 3'd`$ISAhash{$inst}{funct3}`;
+        funct7  = 7'd`'-' eq $ISAhash{$inst}{funct7} ? "0" : $ISAhash{$inst}{funct7}`;
+        # 5
+        assert ( res == (`$ISAhash{$inst}{function}`) ) else $display("`$inst` FAIL.");
+//        $display("Inst: `$inst` In1: %d In2: %d Op: %d Fn3: %d Fn7: %d Res: %d Zero: %d.", in0, in1, opcode, funct3, funct7, res, zero);
+
+//; }
+
+//        $display("==============================================\n\n");     
+ 
+    endtask
+
+    initial begin 
+    	triggerStart = 1'b0 ;
+    	triggerStop  = 1'b0 ; 
+
+        #1000
+    	triggerStart = 1'b1 ;
+    	triggerStop  = 1'b0 ; 
+    	#1000
+
+        in0 = 0;
+        in1 = 0;
+
+        opcode = 0;
+        funct3  = 0;
+        funct7  = 0;
+
+       for( int i = 0 ; i< 1000 ; i++ )
+         runTest();
+
+        #1000
+    	triggerStart = 1'b1 ;
+    	triggerStop  = 1'b1 ; 
+    	#1000
+
+        $finish();
+    end
+
+//    final begin
+//        $display("================== THE END ===================");
+//    end
+
+
+endmodule : `mname`
